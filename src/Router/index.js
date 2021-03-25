@@ -1,5 +1,5 @@
 import ROUTES from './constants/routes';
-import { HomeScreen } from '../Modules/Home';
+import { HomeScreen } from '../Modules/home';
 
 const render = (pathname) => {
   switch (pathname) {
