@@ -1,0 +1,32 @@
+.main-header {
+    height: 135px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 17px;
+}
+
+.brand-name {
+    color: #d04f4f;
+    font-size: 3.5rem;
+}
+
+.search-bar {
+    height: 69px;
+    background: #e7e7e7;
+    border: none;
+    border-radius: 5px;
+    padding-left: 22px;
+    margin-bottom: 25px;
+    font-size: 1.5rem;
+}
+
+.tag-select-group {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 25px;
+}
+
+.tag-select-group tag-select {
+    margin-right: 20px;
+}
