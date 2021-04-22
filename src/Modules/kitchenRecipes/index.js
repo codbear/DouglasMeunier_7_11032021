@@ -1,1 +1,1 @@
-export { default } from './components/KitchenRecipesCollection';
+import './components/KitchenRecipeCard';
