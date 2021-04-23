@@ -30,3 +30,16 @@
 .tag-select-group tag-select {
     margin-right: 20px;
 }
+
+.card-group {
+    justify-content: space-between;
+}
+
+.card-group > .card {
+    flex: initial;
+    margin-top: 50px;
+}
+
+.card-group > .card:first-of-type {
+    margin-left: 0;
+}
