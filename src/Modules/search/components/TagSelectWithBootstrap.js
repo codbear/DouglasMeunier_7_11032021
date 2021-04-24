@@ -97,10 +97,7 @@
       });
     }
 
-    toggleDropdown(event) {
-      event.stopPropagation();
-      event.preventDefault();
-
+    toggleDropdown() {
       const isDropdownOpen = this.$dropdownMenu.classList.contains('show');
 
       if (isDropdownOpen) {
