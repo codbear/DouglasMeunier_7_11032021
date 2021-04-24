@@ -1,1 +1,1 @@
-export { default } from './recipeDataToRecipeCard';
+export { default } from './formatDescription';
