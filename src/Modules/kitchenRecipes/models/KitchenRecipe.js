@@ -1,4 +1,4 @@
-import kitchenRecipeCardFactory from '../factories';
+import { kitchenRecipeCardFactory } from '../factories';
 
 export default class KitchenRecipe {
   constructor(recipeData) {
