@@ -34,8 +34,5 @@ export default function kitchenRecipeCardFactory(kitchenRecipe) {
     recipeCardElement.appendChild(ingredientsListItem);
   });
 
-  const fragment = document.createDocumentFragment();
-  fragment.appendChild(recipeCardElement);
-
-  return fragment;
+  return recipeCardElement;
 }
