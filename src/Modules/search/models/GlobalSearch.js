@@ -23,6 +23,15 @@ export default class GlobalSearch {
 
   /**
    * @public
+   * Get the complete list of facet names.
+   * @returns {string[]} - List of facet names.
+   */
+  getFacets() {
+    return Object.keys(this.index[0]?.facets);
+  }
+
+  /**
+   * @public
    * Set a facet on each object of the indexed data. A facet stores the searchable values of an
    * attribute of the object.
    * @param {string} attribute - The attribute from objects of the indexed data that should be
