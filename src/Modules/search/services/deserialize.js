@@ -1,9 +1,8 @@
-import sanitize from './sanitize';
-
 export default function deserialize(string = '') {
   const chunkedString = string
-    .split(' ')
-    .map((chunk) => sanitize(chunk));
+    .trim()
+    .toLocaleLowerCase()
+    .split(' ');
 
   chunkedString.forEach((chunk) => {
     if (chunk.endsWith('s')) {
