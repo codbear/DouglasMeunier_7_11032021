@@ -1,46 +1,28 @@
-import sanitize from './sanitize';
 import deserialize from './deserialize';
-import searchInArrayWithSearchTerms from './searchInArrayWithSearchTerms';
+import countHitInArrayWithSearchTerms from './countHitInArrayWithSearchTerms';
 
-export default function filterRecipes(search = '', data = []) {
+export default function filterRecipes(
+  search = '',
+  recipes = [],
+) {
   const searchTerms = deserialize(search);
-  const exactMatch = [];
   const match = [];
-  const searchInRecipesFields = searchInArrayWithSearchTerms(searchTerms);
+  const searchInRecipeField = countHitInArrayWithSearchTerms(searchTerms);
 
   // eslint-disable-next-line consistent-return
-  data.forEach((hit) => {
-    const nameChunks = deserialize(hit.name);
-    const descriptionChunks = deserialize(hit.description);
-    const ingredients = hit.ingredients.map(({ ingredient }) => sanitize(ingredient));
+  recipes.forEach((recipe) => {
+    recipe.getSearchIndex().forEach((index) => {
+      const hitCount = searchInRecipeField(recipe.searchIndex[index].index);
 
-    const {
-      isExactMatch: isNameExactMatching,
-      isPartialMatch: isNamePartialMatching,
-    } = searchInRecipesFields(nameChunks);
+      recipe.setScore(index, hitCount);
+    });
 
-    const {
-      isExactMatch: isIngredientsExactMatching,
-      isPartialMatch: isIngredientsPartialMatching,
-    } = searchInRecipesFields(ingredients);
-
-    const {
-      isPartialMatch: isDescriptionPartialMatching,
-    } = searchInRecipesFields(descriptionChunks);
-
-    const isExactMatch = isNameExactMatching || isIngredientsExactMatching;
-    const isPartialMatch = isNamePartialMatching
-      || isDescriptionPartialMatching
-      || isIngredientsPartialMatching;
-
-    if (isExactMatch) {
-      exactMatch.push(hit);
-    }
+    const isPartialMatch = recipe.getScore() > 0;
 
     if (isPartialMatch) {
-      match.push(hit);
+      match.push(recipe);
     }
   });
 
-  return [exactMatch, match];
+  return match;
 }
