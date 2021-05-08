@@ -1,4 +1,8 @@
-export default function deserialize(string = '') {
+/**
+ * @param {string} string
+ * @returns {string[]}
+ */
+export default function deserialize(string) {
   const chunkedString = string
     .trim()
     .toLocaleLowerCase()
