@@ -1,6 +1,10 @@
 import { kitchenRecipeCardFactory } from '../factories';
 
 export default class KitchenRecipe {
+  /**
+   *
+   * @param {Object.<string, *>} recipeData
+   */
   constructor(recipeData) {
     this.id = recipeData.id;
     this.name = recipeData.name;
@@ -10,6 +14,14 @@ export default class KitchenRecipe {
     this.description = recipeData.description;
     this.appliance = recipeData.appliance;
     this.utensils = recipeData.ustensils;
-    this.element = kitchenRecipeCardFactory(this);
+    this.node = kitchenRecipeCardFactory(this);
+  }
+
+  /**
+   *
+   * @return {Node}
+   */
+  getNode() {
+    return this.node.cloneNode(true);
   }
 }
