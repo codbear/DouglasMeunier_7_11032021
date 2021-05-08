@@ -12,6 +12,14 @@ export default class Item {
 
   /**
    * @public
+   * @return {Object<string, *>}
+   */
+  getData() {
+    return this.data;
+  }
+
+  /**
+   * @public
    * @param {Facet} facet
    * @return {Item}
    */
