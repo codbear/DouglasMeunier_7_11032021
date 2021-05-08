@@ -23,7 +23,7 @@ export default class GlobalSearch {
    * @param {Object} options
    * @param {number} [options.minScore=1] - Set the minimal score a hit must have to appear
    * in the results.
-   * @returns {{score: number, item: Item}[]} - An array of Items from the index corresponding to
+   * @returns {Item[]} - An array of Items from the index corresponding to
    * search query.
    */
   search(query, options = { minScore: 1 }) {
@@ -45,9 +45,13 @@ export default class GlobalSearch {
       return { item, score };
     });
 
-    const matchingItems = scoredItems.filter(({ score }) => score >= options.minScore);
+    this.filteredItems = scoredItems.filter(({ score }) => score >= options.minScore);
 
-    return matchingItems;
+    return this.sortResults();
+  }
+
+  sortResults() {
+    return this.filteredItems.map((filteredItem) => filteredItem.item);
   }
 
   /**
