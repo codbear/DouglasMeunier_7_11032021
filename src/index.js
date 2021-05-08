@@ -2,15 +2,30 @@ import './Modules/kitchenRecipes';
 import './Modules/search';
 import { kitchenRecipesFactory } from './Modules/kitchenRecipes/factories';
 import recipes from './Data/recipes.json';
-import filterRecipes from './Modules/search/services';
+import GlobalSearch from './Modules/search/models/GlobalSearch';
 
-const recipeCards = kitchenRecipesFactory(recipes);
+const kitchenRecipes = kitchenRecipesFactory(recipes);
+
+const searchIndex = new GlobalSearch(kitchenRecipes);
+
+searchIndex
+  .setFacet(
+    'name',
+    { priority: 3 },
+  )
+  .setFacet(
+    'description',
+    { priority: 0.5 },
+  )
+  .setFacet(
+    'ingredients',
+    { priority: 2, propertyForFacetingNestedObjects: 'ingredient' },
+  );
 
 const recipesCollectionFragment = document.createDocumentFragment();
 
-recipeCards.forEach((recipeCard) => {
-  const recipeCardElement = recipeCard.element.cloneNode(true);
-  recipesCollectionFragment.appendChild(recipeCardElement);
+kitchenRecipes.forEach((recipeCard) => {
+  recipesCollectionFragment.appendChild(recipeCard.getNode());
 });
 
 const recipesCollectionElement = document.getElementById('kitchenRecipesCollection');
@@ -23,12 +38,10 @@ searchInputElement.addEventListener('input', (e) => {
   const searchInput = e.target.value;
 
   if (searchInput.length >= 3) {
-    const results = filterRecipes(searchInput, recipeCards);
+    const results = searchIndex.search(searchInput, { minScore: 2 });
 
     results.forEach((result) => {
-      const recipeCardElement = result.element.cloneNode(true);
-
-      resultsContainerFragment.appendChild(recipeCardElement);
+      resultsContainerFragment.appendChild(result.getData().getNode());
     });
 
     recipesCollectionElement.innerHTML = '';
