@@ -1,4 +1,4 @@
-import deserialize from '../services';
+import { deserialize, sortResults } from '../services';
 import Facet from './Facet';
 import Item from './Item';
 
@@ -21,10 +21,9 @@ export default class GlobalSearch {
    * Search a string in the index.
    * @param {string} query - A string to search in index.
    * @param {Object} options
-   * @param {number} [options.minScore=1] - Set the minimal score a hit must have to appear
-   * in the results.
-   * @returns {Item[]} - An array of Items from the index corresponding to
-   * search query.
+   * @param {number} [options.minScore=1] - Set the minimal score a hit must have to appear in the
+   * results.
+   * @returns {Item[]} - An array of Items from the index corresponding to search query.
    */
   search(query, options = { minScore: 1 }) {
     const queryChunks = deserialize(query);
@@ -45,13 +44,9 @@ export default class GlobalSearch {
       return { item, score };
     });
 
-    this.filteredItems = scoredItems.filter(({ score }) => score >= options.minScore);
+    const results = scoredItems.filter(({ score }) => score >= options.minScore);
 
-    return this.sortResults();
-  }
-
-  sortResults() {
-    return this.filteredItems.map((filteredItem) => filteredItem.item);
+    return sortResults(results);
   }
 
   /**
