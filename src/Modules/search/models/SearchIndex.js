@@ -6,7 +6,7 @@ import Item from './Item';
  * Create a searchable index from data. You need to set at least one facet if you want your
  * index to be searchable.
  */
-export default class GlobalSearch {
+export default class SearchIndex {
   /**
    * Create an index from data.
    * @param {Object.<string, any>[]} resourceCollection - An array of iterable objects.
@@ -62,7 +62,7 @@ export default class GlobalSearch {
    * @param {string} [options.propertyForFacetingNestedObjects] - If the property you provide to
    * create the facet is an array of objects, you need to set a property from those objects to
    * populate the facet. This property must be a string.
-   * @returns {GlobalSearch}
+   * @returns {SearchIndex}
    */
   setFacet(
     property,

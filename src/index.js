@@ -2,11 +2,11 @@ import './Modules/kitchenRecipes';
 import './Modules/search';
 import { kitchenRecipesFactory } from './Modules/kitchenRecipes/factories';
 import recipes from './Data/recipes.json';
-import GlobalSearch from './Modules/search/models/GlobalSearch';
+import SearchIndex from './Modules/search/models/SearchIndex';
 
 const kitchenRecipes = kitchenRecipesFactory(recipes);
 
-const searchIndex = new GlobalSearch(kitchenRecipes);
+const searchIndex = new SearchIndex(kitchenRecipes);
 
 searchIndex
   .setFacet(
