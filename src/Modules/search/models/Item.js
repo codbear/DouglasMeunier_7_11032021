@@ -1,10 +1,10 @@
 export default class Item {
   /**
    *
-   * @param {Object.<string, any>} dataItem
+   * @param {Object.<string, any>} resourceItem
    */
-  constructor(dataItem) {
-    this.data = dataItem;
+  constructor(resourceItem) {
+    this.data = resourceItem;
 
     /** @type {Object.<string, Facet>} */
     this.facets = {};

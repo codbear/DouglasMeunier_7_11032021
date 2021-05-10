@@ -9,11 +9,11 @@ import Item from './Item';
 export default class GlobalSearch {
   /**
    * Create an index from data.
-   * @param {Object.<string, any>[]} dataCollection - An array of iterable objects.
+   * @param {Object.<string, any>[]} resourceCollection - An array of iterable objects.
    */
-  constructor(dataCollection) {
+  constructor(resourceCollection) {
     /** @type {Item[]} */
-    this.index = dataCollection.map((dataItem) => new Item(dataItem));
+    this.index = resourceCollection.map((resourceItem) => new Item(resourceItem));
   }
 
   /**
