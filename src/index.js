@@ -11,15 +11,15 @@ const searchIndex = new SearchIndex(kitchenRecipes);
 searchIndex
   .setFacet(
     'name',
-    { priority: 3 },
+    { priority: 9 },
   )
   .setFacet(
     'description',
-    { priority: 0.5 },
+    { priority: 1 },
   )
   .setFacet(
     'ingredients',
-    { priority: 2, propertyForFacetingNestedObjects: 'ingredient' },
+    { priority: 3, propertyForFacetingNestedObjects: 'ingredient' },
   );
 
 const recipesCollectionFragment = document.createDocumentFragment();
@@ -38,7 +38,7 @@ searchInputElement.addEventListener('input', (e) => {
   const searchInput = e.target.value;
 
   if (searchInput.length >= 3) {
-    const results = searchIndex.search(searchInput, { minScore: 2 });
+    const results = searchIndex.search(searchInput, { minScore: 3 });
 
     results.forEach((result) => {
       resultsContainerFragment.appendChild(result.getData().getNode());
