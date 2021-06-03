@@ -1,5 +1,10 @@
 import formatDescription from '../services';
 
+/**
+ *
+ * @param {Object.<string, *> }kitchenRecipe
+ * @return {HTMLElement}
+ */
 export default function kitchenRecipeCardFactory(kitchenRecipe) {
   const recipeCardElement = document.createElement('kitchen-recipe-card');
   recipeCardElement.classList.add('card');
@@ -34,8 +39,5 @@ export default function kitchenRecipeCardFactory(kitchenRecipe) {
     recipeCardElement.appendChild(ingredientsListItem);
   });
 
-  const fragment = document.createDocumentFragment();
-  fragment.appendChild(recipeCardElement);
-
-  return fragment;
+  return recipeCardElement;
 }
