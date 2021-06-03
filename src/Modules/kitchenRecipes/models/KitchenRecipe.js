@@ -1,21 +1,27 @@
 import { kitchenRecipeCardFactory } from '../factories';
 
 export default class KitchenRecipe {
+  /**
+   *
+   * @param {Object.<string, *>} recipeData
+   */
   constructor(recipeData) {
-    this.hydrate(recipeData);
-    this.fragment = kitchenRecipeCardFactory(this);
+    this.id = recipeData.id;
+    this.name = recipeData.name;
+    this.servings = recipeData.servings;
+    this.ingredients = recipeData.ingredients;
+    this.duration = recipeData.time;
+    this.description = recipeData.description;
+    this.appliance = recipeData.appliance;
+    this.utensils = recipeData.ustensils;
+    this.node = kitchenRecipeCardFactory(this);
   }
 
-  hydrate(data) {
-    this.id = data.id;
-    this.name = data.name;
-    this.servings = data.servings;
-    this.ingredients = data.ingredients;
-    this.duration = data.time;
-    this.description = data.description;
-    this.appliance = data.appliance;
-    this.utensils = data.ustensils;
-
-    return this;
+  /**
+   *
+   * @return {Node}
+   */
+  getNode() {
+    return this.node.cloneNode(true);
   }
 }
