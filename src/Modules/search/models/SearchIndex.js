@@ -1,4 +1,4 @@
-import { deserialize, sortResults } from '../services';
+import { bubbleSort, deserialize } from '../services';
 import Facet from './Facet';
 import Item from './Item';
 
@@ -46,7 +46,8 @@ export default class SearchIndex {
 
     const results = scoredItems.filter(({ score }) => score >= options.minScore);
 
-    return sortResults(results);
+    return bubbleSort(results, (result) => result.score)
+      .map((result) => result.item);
   }
 
   /**

@@ -1,2 +1,2 @@
 export { default as deserialize } from './deserialize';
-export { default as sortResults } from './sortResults';
+export { default as bubbleSort } from './bubbleSort';
