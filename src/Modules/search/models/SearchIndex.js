@@ -1,6 +1,7 @@
 import { deserialize, quickSort } from '../services';
 import Facet from './Facet';
 import Item from './Item';
+import Filter from './Filter';
 
 /**
  * Create a searchable index from data. You need to set at least one facet if you want your
@@ -14,6 +15,12 @@ export default class SearchIndex {
   constructor(resourceCollection) {
     /** @type {Item[]} */
     this.index = resourceCollection.map((resourceItem) => new Item(resourceItem));
+
+    /** @type {Item[]} */
+    this.resultsIndex = [...this.index];
+
+    /** @type {Object<string, string[]>} */
+    this.filters = {};
   }
 
   /**
@@ -46,8 +53,30 @@ export default class SearchIndex {
 
     const results = scoredItems.filter(({ score }) => score >= options.minScore);
 
-    return quickSort(results, (result) => result.score)
+    this.resultsIndex = quickSort(results, (result) => result.score)
       .map((result) => result.item);
+
+    return this.applyFilters();
+  }
+
+  /**
+   * @public
+   * @return {Item[]}
+   */
+  applyFilters() {
+    const isFilterValueInItem = (item) => (filterName) => (filterValue) => (
+      item.getFilter(filterName).hasValue(filterValue)
+    );
+
+    const doesFilterMatchItem = (item) => (filterName) => (
+      this.filters[filterName].every(isFilterValueInItem(item)(filterName))
+    );
+
+    const doesItemMatchAllFilters = (item) => (
+      this.getFilterNames().every(doesFilterMatchItem(item))
+    );
+
+    return this.resultsIndex.filter(doesItemMatchAllFilters);
   }
 
   /**
@@ -73,19 +102,113 @@ export default class SearchIndex {
     },
   ) {
     const { priority, propertyForFacetingNestedObjects } = options;
-    const { isPropertyValid, isNestedPropertyValid, propertyType } = this.index[0]
-      .supportPropertyForFaceting(property, propertyForFacetingNestedObjects);
+
+    const deserializer = this.getDeserializer(property, propertyForFacetingNestedObjects);
+
+    this.index = this.index.map((item) => {
+      const valuesForFaceting = deserializer(item.data[property]);
+
+      return item.addFacet(new Facet(property, valuesForFaceting, priority));
+    });
+
+    return this;
+  }
+
+  /**
+   * @public
+   * @param {string} property
+   * @param {string} [propertyForFilteringWithNestedObject]
+   * @return {SearchIndex}
+   */
+  setFilter(property, propertyForFilteringWithNestedObject = '') {
+    const deserializer = this.getDeserializer(property, propertyForFilteringWithNestedObject);
+
+    this.index = this.index.map((item) => {
+      const valuesForFiltering = deserializer(item.data[property]);
+
+      return item.addFilter(new Filter(property, valuesForFiltering));
+    });
+
+    this.filters = {
+      ...this.filters,
+      [property]: {},
+    };
+
+    return this;
+  }
+
+  /**
+   * @public
+   * @return {string[]}
+   */
+  getFilterNames() {
+    return Object.keys(this.filters);
+  }
+
+  /**
+   * @public
+   * @param {string} filterName
+   * @return {Set<string>}
+   */
+  getAllFilterValues(filterName) {
+    const filterValues = this.index
+      .map((item) => item.getFilter(filterName).getValues())
+      .flat();
+
+    return new Set(filterValues);
+  }
+
+  /**
+   * @public
+   * @param {string} filterName
+   * @param {string} value
+   * @return {Item[]}
+   */
+  addFilter(filterName, value) {
+    this.filters[filterName].push(value);
+
+    return this.applyFilters();
+  }
+
+  /**
+   * @public
+   * @param {string} filterName
+   * @param {string} value
+   * @return {Item[]}
+   */
+  removeFilter(filterName, value) {
+    const filterIndex = this.filters[filterName].indexOf(value);
+
+    if (filterIndex > -1) {
+      this.filters[filterName].splice(filterIndex, 1);
+    }
+
+    return this.applyFilters();
+  }
+
+  /**
+   * @private
+   * @param {string} property
+   * @param {string} [subProperty]
+   * @return {function(string): string[]}
+   */
+  getDeserializer(property, subProperty = '') {
+    const {
+      isPropertyValid,
+      isNestedPropertyValid,
+      propertyType,
+    } = this.index[0].supportPropertyForFaceting(property, subProperty);
 
     if (!isPropertyValid) {
-      throw new Error(`"${property}" is not a valid property to create a facet.`);
+      throw new Error(`"${property}" is not a valid property.`);
     }
 
     if (propertyType === 'not supported') {
-      throw new Error(`"${property}" is not supported to create a facet. Supported property types are string, array of strings or array of objects.`);
+      throw new Error(`"${property}" is not supported. Supported property types are string, array of strings or array of objects.`);
     }
 
     if (propertyType === 'objectArray' && !isNestedPropertyValid) {
-      throw new Error(`"${propertyForFacetingNestedObjects}" is not a valid property in "${property}" to create a facet.`);
+      throw new Error(`"${subProperty}" is not a valid property in "${property}".`);
     }
 
     const propertyTypeToDeserializer = {
@@ -95,18 +218,10 @@ export default class SearchIndex {
         .map((string) => deserialize(string)),
 
       objectArray: (array) => array
-        .map((object) => deserialize(object[propertyForFacetingNestedObjects])).flat(),
+        .map((object) => deserialize(object[subProperty])).flat(),
     };
 
-    const deserializer = propertyTypeToDeserializer[propertyType];
-
-    this.index = this.index.map((item) => {
-      const valuesForFaceting = deserializer(item.data[property]);
-
-      return item.addFacet(new Facet(property, valuesForFaceting, priority));
-    });
-
-    return this;
+    return propertyTypeToDeserializer[propertyType];
   }
 
   /**

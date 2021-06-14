@@ -5,34 +5,25 @@ import recipes from './Data/recipes.json';
 import SearchIndex from './Modules/search/models/SearchIndex';
 
 const kitchenRecipes = kitchenRecipesFactory(recipes);
-
 const searchIndex = new SearchIndex(kitchenRecipes);
-
-searchIndex
-  .setFacet(
-    'name',
-    { priority: 9 },
-  )
-  .setFacet(
-    'description',
-    { priority: 1 },
-  )
-  .setFacet(
-    'ingredients',
-    { priority: 3, propertyForFacetingNestedObjects: 'ingredient' },
-  );
-
-const recipesCollectionFragment = document.createDocumentFragment();
-
-kitchenRecipes.forEach((recipeCard) => {
-  recipesCollectionFragment.appendChild(recipeCard.getNode());
-});
-
 const recipesCollectionElement = document.getElementById('kitchenRecipesCollection');
-recipesCollectionElement.appendChild(recipesCollectionFragment);
-
+const recipesCollectionFragment = document.createDocumentFragment();
 const searchInputElement = document.getElementById('searchBar');
 const resultsContainerFragment = document.createDocumentFragment();
+
+searchIndex
+  .setFacet('name', { priority: 9 })
+  .setFacet('description', { priority: 1 })
+  .setFacet('ingredients', { priority: 3, propertyForFacetingNestedObjects: 'ingredient' })
+  .setFilter('ingredients', 'ingredient')
+  .setFilter('appliance')
+  .setFilter('utensils');
+
+searchIndex.getFilteredIndex().forEach((kitchenRecipeItem) => {
+  recipesCollectionFragment.appendChild(kitchenRecipeItem.getData().getNode());
+});
+
+recipesCollectionElement.appendChild(recipesCollectionFragment);
 
 searchInputElement.addEventListener('input', (e) => {
   const searchInput = e.target.value;
@@ -43,7 +34,6 @@ searchInputElement.addEventListener('input', (e) => {
     results.forEach((result) => {
       resultsContainerFragment.appendChild(result.getData().getNode());
     });
-
     recipesCollectionElement.innerHTML = '';
     recipesCollectionElement.appendChild(resultsContainerFragment);
   }
