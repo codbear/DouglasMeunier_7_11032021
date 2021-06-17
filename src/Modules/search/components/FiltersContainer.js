@@ -104,6 +104,8 @@ class FiltersContainer {
 
     dropdownElement.innerHTML = '';
     dropdownElement.append(dropdownElementFragment);
+
+    this.searchIndex.renderResults();
   }
 
   updateFiltersCloud() {
