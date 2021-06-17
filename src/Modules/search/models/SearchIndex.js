@@ -68,6 +68,16 @@ export default class SearchIndex {
    * @return {Item[]}
    */
   applyFilters() {
+    const hasEmptyFilters = this
+      .getFilterNames()
+      .every((filterName) => this.filters[filterName].length === 0);
+
+    if (hasEmptyFilters) {
+      this.resultsIndex = [...this.index];
+
+      return this.resultsIndex;
+    }
+
     const isFilterValueInItem = (item) => (filterName) => (filterValue) => (
       item.getFilter(filterName).hasValue(filterValue)
     );
