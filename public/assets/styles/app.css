@@ -21,6 +21,12 @@
     font-size: 1.5rem;
 }
 
+.tags-cloud {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+}
+
 .tag-select-group {
     display: flex;
     flex-direction: row;

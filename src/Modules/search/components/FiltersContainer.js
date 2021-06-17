@@ -11,6 +11,18 @@ class FiltersContainer {
     this.activeFilters = [];
 
     this.handleAddFilter = this.handleAddFilter.bind(this);
+
+    this.dropdownContainer = document.createElement('div');
+    this.dropdownContainer.classList.add('tag-select-group');
+    this.root.append(this.dropdownContainer);
+
+    this.filtersCloud = document.createElement('div');
+    this.filtersCloud.classList.add('tags-cloud');
+    this.filtersCloud.addEventListener('removeFilter', (e) => {
+      const { filterName, filterValue } = e.detail;
+      this.handleRemoveFilter(filterName, filterValue);
+    });
+    this.root.prepend(this.filtersCloud);
   }
 
   setFilter({
@@ -36,7 +48,7 @@ class FiltersContainer {
       this.handleAddFilter(searchIndexItemProperty, variant),
     );
 
-    this.root.appendChild(dropdownElement);
+    this.dropdownContainer.append(dropdownElement);
 
     return this;
   }
@@ -45,21 +57,36 @@ class FiltersContainer {
     return (event) => {
       const filterValue = event.detail;
       this.searchIndex.addFilter(filterName, filterValue);
-      this.activeFilters.push({ filterValue, variant });
+      this.activeFilters.push({ filterName, filterValue, variant });
 
       this.updateDropdown(filterName);
+      this.updateFiltersCloud();
     };
   }
 
   handleRemoveFilter(filterName, filterValue) {
+    const activeFilter = this.activeFilters.filter((filter) => (
+      filter.filterName === filterName && filter.filterValue === filterValue
+    ))[0];
+    const activeFilterIndex = this.activeFilters.indexOf(activeFilter);
+
+    if (activeFilterIndex < 0) {
+      return;
+    }
+
+    this.activeFilters.splice(activeFilterIndex, 1);
+
     this.searchIndex.removeFilter(filterName, filterValue);
+
     this.updateDropdown(filterName);
+    this.updateFiltersCloud();
   }
 
   updateDropdown(dropdownId) {
     const { dropdownElement } = this.dropdownElements
       .filter((element) => element.id === dropdownId)[0];
-    dropdownElement.innerHTML = '';
+
+    const dropdownElementFragment = document.createDocumentFragment();
 
     const filterValues = this.searchIndex.getAllFilterValues(dropdownId);
 
@@ -71,9 +98,28 @@ class FiltersContainer {
       if (!isActive) {
         const filterElement = document.createElement('li');
         filterElement.textContent = filterValue;
-        dropdownElement.appendChild(filterElement);
+        dropdownElementFragment.append(filterElement);
       }
     });
+
+    dropdownElement.innerHTML = '';
+    dropdownElement.append(dropdownElementFragment);
+  }
+
+  updateFiltersCloud() {
+    const filtersCloudFragment = document.createDocumentFragment();
+
+    this.activeFilters.forEach((activeFilter) => {
+      const tagElement = document.createElement('tag-filter');
+      tagElement.setAttribute('label', activeFilter.filterValue);
+      tagElement.setAttribute('filterName', activeFilter.filterName);
+      tagElement.setAttribute('variant', activeFilter.variant);
+
+      filtersCloudFragment.append(tagElement);
+    });
+
+    this.filtersCloud.innerHTML = '';
+    this.filtersCloud.append(filtersCloudFragment);
   }
 }
 
