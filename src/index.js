@@ -3,6 +3,7 @@ import './Modules/search';
 import { kitchenRecipesFactory } from './Modules/kitchenRecipes/factories';
 import recipes from './Data/recipes.json';
 import SearchIndex from './Modules/search/models/SearchIndex';
+import FiltersContainer from './Modules/search/components/FiltersContainer';
 
 const kitchenRecipes = kitchenRecipesFactory(recipes);
 const searchIndex = new SearchIndex(kitchenRecipes);
@@ -15,11 +16,11 @@ searchIndex
   .setFacet('name', { priority: 9 })
   .setFacet('description', { priority: 1 })
   .setFacet('ingredients', { priority: 3, propertyForFacetingNestedObjects: 'ingredient' })
-  .setFilter('ingredients', 'ingredient')
+  .setFilter('ingredients', { propertyForFilteringWithNestedObject: 'ingredient' })
   .setFilter('appliance')
   .setFilter('utensils');
 
-searchIndex.getFilteredIndex().forEach((kitchenRecipeItem) => {
+searchIndex.all().forEach((kitchenRecipeItem) => {
   recipesCollectionFragment.appendChild(kitchenRecipeItem.getData().getNode());
 });
 
@@ -38,3 +39,22 @@ searchInputElement.addEventListener('input', (e) => {
     recipesCollectionElement.appendChild(resultsContainerFragment);
   }
 });
+
+const filtersContainerRoot = document.getElementById('filtersContainerRoot');
+const filtersContainer = new FiltersContainer(searchIndex, filtersContainerRoot);
+filtersContainer
+  .setFilter({
+    dropdownLabel: 'Ingrédients',
+    searchIndexItemProperty: 'ingredients',
+    searchIndexItemSubProperty: 'ingredient',
+  })
+  .setFilter({
+    dropdownLabel: 'Appareils',
+    variant: 'danger',
+    searchIndexItemProperty: 'appliance',
+  })
+  .setFilter({
+    dropdownLabel: 'Ustensiles',
+    variant: 'success',
+    searchIndexItemProperty: 'utensils',
+  });

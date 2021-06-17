@@ -2,7 +2,7 @@
  * @param {boolean} shouldHandlePlural
  * @returns {function(string): string[]}
  */
-const getDeserializer = (shouldHandlePlural) => (string) => {
+const getDeserializer = (shouldHandlePlural = false) => (string) => {
   const chunkedString = string
     .trim()
     .toLocaleLowerCase()

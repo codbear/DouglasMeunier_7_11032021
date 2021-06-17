@@ -37,7 +37,7 @@ export default class SearchIndex {
    * @returns {Item[]} - An array of Items from the index corresponding to search query.
    */
   search(query, options = { minScore: 1 }) {
-    const queryChunks = deserialize(query);
+    const queryChunks = getDeserializer(true)(query);
 
     const scoredItems = this.index.map((item) => {
       let score = 0;
@@ -80,7 +80,9 @@ export default class SearchIndex {
       this.getFilterNames().every(doesFilterMatchItem(item))
     );
 
-    return this.resultsIndex.filter(doesItemMatchAllFilters);
+    this.resultsIndex = this.resultsIndex.filter(doesItemMatchAllFilters);
+
+    return this.resultsIndex;
   }
 
   /**
@@ -103,16 +105,14 @@ export default class SearchIndex {
     options = {
       priority: 1,
       propertyForFacetingNestedObjects: '',
-      shouldAtomize: true,
-      shouldHandlePlural: true,
     },
   ) {
     const {
-      priority, propertyForFacetingNestedObjects, shouldAtomize, shouldHandlePlural,
+      priority, propertyForFacetingNestedObjects,
     } = options;
 
     const deserializer = this.getDeserializer(
-      property, propertyForFacetingNestedObjects, shouldAtomize, shouldHandlePlural,
+      property, propertyForFacetingNestedObjects, true, true,
     );
 
     this.index = this.index.map((item) => {
@@ -149,8 +149,6 @@ export default class SearchIndex {
     this.index = this.index.map((item) => {
       const valuesForFiltering = deserializer(item.data[property]);
 
-      console.log(valuesForFiltering);
-
       return item.addFilter(new Filter(property, valuesForFiltering));
     });
 
@@ -176,7 +174,7 @@ export default class SearchIndex {
    * @return {Set<string>}
    */
   getAllFilterValues(filterName) {
-    const filterValues = this.index
+    const filterValues = this.resultsIndex
       .map((item) => item.getFilter(filterName).getValues())
       .flat();
 
