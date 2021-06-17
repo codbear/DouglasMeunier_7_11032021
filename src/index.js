@@ -3,48 +3,48 @@ import './Modules/search';
 import { kitchenRecipesFactory } from './Modules/kitchenRecipes/factories';
 import recipes from './Data/recipes.json';
 import SearchIndex from './Modules/search/models/SearchIndex';
+import FiltersContainer from './Modules/search/components/FiltersContainer';
 
 const kitchenRecipes = kitchenRecipesFactory(recipes);
-
-const searchIndex = new SearchIndex(kitchenRecipes);
-
+const recipeCardsContainer = document.getElementById('kitchenRecipesCollection');
+const noResultsMessage = 'Aucune recette ne correspond à votre critère... vous pouvez chercher «'
+  + ' tarte aux pommes », « poisson », etc.';
+const searchIndex = new SearchIndex(kitchenRecipes, recipeCardsContainer, noResultsMessage);
 searchIndex
-  .setFacet(
-    'name',
-    { priority: 9 },
-  )
-  .setFacet(
-    'description',
-    { priority: 1 },
-  )
-  .setFacet(
-    'ingredients',
-    { priority: 3, propertyForFacetingNestedObjects: 'ingredient' },
-  );
+  .setFacet('name', { priority: 9 })
+  .setFacet('description', { priority: 1 })
+  .setFacet('ingredients', { priority: 3, propertyForFacetingNestedObjects: 'ingredient' })
+  .renderResults();
 
-const recipesCollectionFragment = document.createDocumentFragment();
-
-kitchenRecipes.forEach((recipeCard) => {
-  recipesCollectionFragment.appendChild(recipeCard.getNode());
-});
-
-const recipesCollectionElement = document.getElementById('kitchenRecipesCollection');
-recipesCollectionElement.appendChild(recipesCollectionFragment);
+const filtersContainerRoot = document.getElementById('filtersContainerRoot');
+const filtersContainer = new FiltersContainer(searchIndex, filtersContainerRoot);
+filtersContainer
+  .setFilter({
+    dropdownLabel: 'Ingrédients',
+    searchIndexItemProperty: 'ingredients',
+    searchIndexItemSubProperty: 'ingredient',
+  })
+  .setFilter({
+    dropdownLabel: 'Appareils',
+    variant: 'danger',
+    searchIndexItemProperty: 'appliance',
+  })
+  .setFilter({
+    dropdownLabel: 'Ustensiles',
+    variant: 'success',
+    searchIndexItemProperty: 'utensils',
+  });
 
 const searchInputElement = document.getElementById('searchBar');
-const resultsContainerFragment = document.createDocumentFragment();
-
 searchInputElement.addEventListener('input', (e) => {
   const searchInput = e.target.value;
 
+  if (searchInput === '') {
+    searchIndex.resetResults();
+  }
+
   if (searchInput.length >= 3) {
-    const results = searchIndex.search(searchInput, { minScore: 3 });
-
-    results.forEach((result) => {
-      resultsContainerFragment.appendChild(result.getData().getNode());
-    });
-
-    recipesCollectionElement.innerHTML = '';
-    recipesCollectionElement.appendChild(resultsContainerFragment);
+    searchIndex.search(searchInput, { minScore: 3, directlyRenderResults: true });
+    filtersContainer.updateAllDropdowns();
   }
 });

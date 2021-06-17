@@ -8,6 +8,9 @@ export default class Item {
 
     /** @type {Object.<string, Facet>} */
     this.facets = {};
+
+    /** @type {Object.<string, Filter>} */
+    this.filters = {};
   }
 
   /**
@@ -30,6 +33,29 @@ export default class Item {
     };
 
     return this;
+  }
+
+  /**
+   * @public
+   * @param {Filter} filter
+   * @return {Item}
+   */
+  addFilter(filter) {
+    this.filters = {
+      ...this.filters,
+      [filter.name]: filter,
+    };
+
+    return this;
+  }
+
+  /**
+   * @public
+   * @param {string} filterName
+   * @return {Filter}
+   */
+  getFilter(filterName) {
+    return this.filters[filterName];
   }
 
   /**
