@@ -78,6 +78,23 @@
       this.$dropdownMenu = this.shadowRoot.querySelector('.dropdown-menu');
       this.$dropdownItemsSlot = this.shadowRoot.querySelector('slot');
 
+      this.$dropdownItemsSlot.addEventListener('slotchange', () => {
+        const dropdownItems = this.$dropdownItemsSlot.assignedElements();
+        dropdownItems.forEach((dropdownItem) => {
+          dropdownItem.classList.add('dropdown-item');
+          dropdownItem.addEventListener(
+            'click',
+            () => {
+              this.dispatchEvent(new CustomEvent('clickItem', {
+                bubbles: false,
+                composed: false,
+                detail: dropdownItem.textContent,
+              }));
+            },
+          );
+        });
+      });
+
       this.$dropdownToggle.addEventListener('click', this.toggleDropdown);
     }
 
@@ -90,11 +107,6 @@
 
       const dropdownLabel = document.createTextNode(this.label);
       this.$dropdownToggle.appendChild(dropdownLabel);
-
-      const dropdownItems = this.$dropdownItemsSlot.assignedElements();
-      dropdownItems.forEach((dropdownItem) => {
-        dropdownItem.classList.add('dropdown-item');
-      });
     }
 
     toggleDropdown() {
