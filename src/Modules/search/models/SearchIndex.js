@@ -1,4 +1,4 @@
-import { deserialize, quickSort } from '../services';
+import { getDeserializer, quickSort } from '../services';
 import Facet from './Facet';
 import Item from './Item';
 import Filter from './Filter';
@@ -21,6 +21,10 @@ export default class SearchIndex {
 
     /** @type {Object<string, string[]>} */
     this.filters = {};
+  }
+
+  all() {
+    return this.resultsIndex;
   }
 
   /**
@@ -99,11 +103,17 @@ export default class SearchIndex {
     options = {
       priority: 1,
       propertyForFacetingNestedObjects: '',
+      shouldAtomize: true,
+      shouldHandlePlural: true,
     },
   ) {
-    const { priority, propertyForFacetingNestedObjects } = options;
+    const {
+      priority, propertyForFacetingNestedObjects, shouldAtomize, shouldHandlePlural,
+    } = options;
 
-    const deserializer = this.getDeserializer(property, propertyForFacetingNestedObjects);
+    const deserializer = this.getDeserializer(
+      property, propertyForFacetingNestedObjects, shouldAtomize, shouldHandlePlural,
+    );
 
     this.index = this.index.map((item) => {
       const valuesForFaceting = deserializer(item.data[property]);
@@ -117,21 +127,36 @@ export default class SearchIndex {
   /**
    * @public
    * @param {string} property
-   * @param {string} [propertyForFilteringWithNestedObject]
+   * @param options
    * @return {SearchIndex}
    */
-  setFilter(property, propertyForFilteringWithNestedObject = '') {
-    const deserializer = this.getDeserializer(property, propertyForFilteringWithNestedObject);
+  setFilter(
+    property,
+    options = {
+      propertyForFilteringWithNestedObject: '',
+      shouldAtomize: false,
+      shouldHandlePlural: false,
+    },
+  ) {
+    const { propertyForFilteringWithNestedObject, shouldAtomize, shouldHandlePlural } = options;
+    const deserializer = this.getDeserializer(
+      property,
+      propertyForFilteringWithNestedObject,
+      shouldAtomize,
+      shouldHandlePlural,
+    );
 
     this.index = this.index.map((item) => {
       const valuesForFiltering = deserializer(item.data[property]);
+
+      console.log(valuesForFiltering);
 
       return item.addFilter(new Filter(property, valuesForFiltering));
     });
 
     this.filters = {
       ...this.filters,
-      [property]: {},
+      [property]: [],
     };
 
     return this;
@@ -190,9 +215,11 @@ export default class SearchIndex {
    * @private
    * @param {string} property
    * @param {string} [subProperty]
+   * @param {boolean} shouldAtomize
+   * @param {boolean} shouldHandlePlural
    * @return {function(string): string[]}
    */
-  getDeserializer(property, subProperty = '') {
+  getDeserializer(property, subProperty = '', shouldAtomize = false, shouldHandlePlural = false) {
     const {
       isPropertyValid,
       isNestedPropertyValid,
@@ -211,14 +238,28 @@ export default class SearchIndex {
       throw new Error(`"${subProperty}" is not a valid property in "${property}".`);
     }
 
+    const deserialize = getDeserializer(shouldHandlePlural);
+
     const propertyTypeToDeserializer = {
-      string: (string) => deserialize(string),
+      string: (string) => (
+        shouldAtomize
+          ? deserialize(string)
+          : string
+      ),
 
-      stringArray: (array) => array
-        .map((string) => deserialize(string)),
+      stringArray: (array) => (
+        shouldAtomize
+          ? array.map((string) => deserialize(string))
+          : array
+      ),
 
-      objectArray: (array) => array
-        .map((object) => deserialize(object[subProperty])).flat(),
+      objectArray: (array) => (
+        array.map((object) => (
+          shouldAtomize
+            ? deserialize(object[subProperty])
+            : object[subProperty]
+        )).flat()
+      ),
     };
 
     return propertyTypeToDeserializer[propertyType];
