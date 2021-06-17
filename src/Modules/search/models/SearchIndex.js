@@ -12,12 +12,15 @@ export default class SearchIndex {
    * Create an index from data.
    * @param {Object.<string, any>[]} resourceCollection - An array of iterable objects.
    * @param {HTMLElement} resultsContainer
+   * @param {string} noResultsMessage - Message to display when no results are found.
    */
-  constructor(resourceCollection, resultsContainer) {
+  constructor(resourceCollection, resultsContainer, noResultsMessage) {
     /** @type {Item[]} */
     this.index = resourceCollection.map((resourceItem) => new Item(resourceItem));
 
     this.resultsContainer = resultsContainer;
+
+    this.noResultsMessage = document.createTextNode(noResultsMessage);
 
     /** @type {Item[]} */
     this.resultsIndex = [...this.index];
@@ -26,14 +29,29 @@ export default class SearchIndex {
     this.filters = {};
   }
 
+  resetResults() {
+    this.resultsIndex = [...this.index];
+    this.applyFilters();
+    this.renderResults();
+
+    return this;
+  }
+
   renderResults() {
+    this.resultsContainer.innerHTML = '';
+
+    if (this.resultsIndex.length === 0) {
+      this.resultsContainer.append(this.noResultsMessage);
+
+      return;
+    }
+
     const resultsContainerFragment = document.createDocumentFragment();
 
     this.resultsIndex.forEach((result) => {
       resultsContainerFragment.append(result.getData().getNode());
     });
 
-    this.resultsContainer.innerHTML = '';
     this.resultsContainer.append(resultsContainerFragment);
   }
 

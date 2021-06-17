@@ -7,7 +7,9 @@ import FiltersContainer from './Modules/search/components/FiltersContainer';
 
 const kitchenRecipes = kitchenRecipesFactory(recipes);
 const recipeCardsContainer = document.getElementById('kitchenRecipesCollection');
-const searchIndex = new SearchIndex(kitchenRecipes, recipeCardsContainer);
+const noResultsMessage = 'Aucune recette ne correspond à votre critère... vous pouvez chercher «'
+  + ' tarte aux pommes », « poisson », etc.';
+const searchIndex = new SearchIndex(kitchenRecipes, recipeCardsContainer, noResultsMessage);
 searchIndex
   .setFacet('name', { priority: 9 })
   .setFacet('description', { priority: 1 })
@@ -36,6 +38,10 @@ filtersContainer
 const searchInputElement = document.getElementById('searchBar');
 searchInputElement.addEventListener('input', (e) => {
   const searchInput = e.target.value;
+
+  if (searchInput === '') {
+    searchIndex.resetResults();
+  }
 
   if (searchInput.length >= 3) {
     searchIndex.search(searchInput, { minScore: 3, directlyRenderResults: true });
