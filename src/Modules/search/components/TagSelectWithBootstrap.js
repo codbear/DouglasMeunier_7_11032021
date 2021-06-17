@@ -38,6 +38,8 @@
       }
       .dropdown-menu {
         padding: 16px 0;
+        max-height: 50vh;
+        overflow: auto;
       }
       .dropdown-menu li {
         padding: 0 20px;
