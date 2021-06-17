@@ -45,6 +45,7 @@ searchInputElement.addEventListener('input', (e) => {
 
   if (searchInput.length >= 3) {
     searchIndex.search(searchInput, { minScore: 3, directlyRenderResults: true });
-    filtersContainer.updateAllDropdowns();
   }
+
+  filtersContainer.updateAllDropdowns();
 });
