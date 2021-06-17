@@ -11,10 +11,13 @@ export default class SearchIndex {
   /**
    * Create an index from data.
    * @param {Object.<string, any>[]} resourceCollection - An array of iterable objects.
+   * @param {HTMLElement} resultsContainer
    */
-  constructor(resourceCollection) {
+  constructor(resourceCollection, resultsContainer) {
     /** @type {Item[]} */
     this.index = resourceCollection.map((resourceItem) => new Item(resourceItem));
+
+    this.resultsContainer = resultsContainer;
 
     /** @type {Item[]} */
     this.resultsIndex = [...this.index];
@@ -23,8 +26,15 @@ export default class SearchIndex {
     this.filters = {};
   }
 
-  all() {
-    return this.resultsIndex;
+  renderResults() {
+    const resultsContainerFragment = document.createDocumentFragment();
+
+    this.resultsIndex.forEach((result) => {
+      resultsContainerFragment.append(result.getData().getNode());
+    });
+
+    this.resultsContainer.innerHTML = '';
+    this.resultsContainer.append(resultsContainerFragment);
   }
 
   /**
@@ -34,9 +44,11 @@ export default class SearchIndex {
    * @param {Object} options
    * @param {number} [options.minScore=1] - Set the minimal score a hit must have to appear in the
    * results.
+   * @param {boolean} [options.directlyRenderResults=false] - Directly render search results in
+   * the results container.
    * @returns {Item[]} - An array of Items from the index corresponding to search query.
    */
-  search(query, options = { minScore: 1 }) {
+  search(query, options = { minScore: 1, directlyRenderResults: false }) {
     const queryChunks = getDeserializer(true)(query);
 
     const scoredItems = this.index.map((item) => {
@@ -60,7 +72,13 @@ export default class SearchIndex {
     this.resultsIndex = quickSort(results, (result) => result.score)
       .map((result) => result.item);
 
-    return this.applyFilters();
+    this.applyFilters();
+
+    if (options.directlyRenderResults) {
+      this.renderResults();
+    }
+
+    return this.resultsIndex;
   }
 
   /**
@@ -68,16 +86,6 @@ export default class SearchIndex {
    * @return {Item[]}
    */
   applyFilters() {
-    const hasEmptyFilters = this
-      .getFilterNames()
-      .every((filterName) => this.filters[filterName].length === 0);
-
-    if (hasEmptyFilters) {
-      this.resultsIndex = [...this.index];
-
-      return this.resultsIndex;
-    }
-
     const isFilterValueInItem = (item) => (filterName) => (filterValue) => (
       item.getFilter(filterName).hasValue(filterValue)
     );
@@ -216,7 +224,17 @@ export default class SearchIndex {
       this.filters[filterName].splice(filterIndex, 1);
     }
 
+    if (this.hasEmptyFilters) {
+      this.resultsIndex = [...this.index];
+    }
+
     return this.applyFilters();
+  }
+
+  hasEmptyFilters() {
+    return this
+      .getFilterNames()
+      .every((filterName) => this.filters[filterName].length === 0);
   }
 
   /**

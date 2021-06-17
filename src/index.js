@@ -6,37 +6,20 @@ import SearchIndex from './Modules/search/models/SearchIndex';
 import FiltersContainer from './Modules/search/components/FiltersContainer';
 
 const kitchenRecipes = kitchenRecipesFactory(recipes);
-const searchIndex = new SearchIndex(kitchenRecipes);
-const recipesCollectionElement = document.getElementById('kitchenRecipesCollection');
-const recipesCollectionFragment = document.createDocumentFragment();
-const searchInputElement = document.getElementById('searchBar');
-const resultsContainerFragment = document.createDocumentFragment();
-
+const recipeCardsContainer = document.getElementById('kitchenRecipesCollection');
+const searchIndex = new SearchIndex(kitchenRecipes, recipeCardsContainer);
 searchIndex
   .setFacet('name', { priority: 9 })
   .setFacet('description', { priority: 1 })
   .setFacet('ingredients', { priority: 3, propertyForFacetingNestedObjects: 'ingredient' })
-  .setFilter('ingredients', { propertyForFilteringWithNestedObject: 'ingredient' })
-  .setFilter('appliance')
-  .setFilter('utensils');
+  .renderResults();
 
-searchIndex.all().forEach((kitchenRecipeItem) => {
-  recipesCollectionFragment.appendChild(kitchenRecipeItem.getData().getNode());
-});
-
-recipesCollectionElement.appendChild(recipesCollectionFragment);
-
+const searchInputElement = document.getElementById('searchBar');
 searchInputElement.addEventListener('input', (e) => {
   const searchInput = e.target.value;
 
   if (searchInput.length >= 3) {
-    const results = searchIndex.search(searchInput, { minScore: 3 });
-
-    results.forEach((result) => {
-      resultsContainerFragment.appendChild(result.getData().getNode());
-    });
-    recipesCollectionElement.innerHTML = '';
-    recipesCollectionElement.appendChild(resultsContainerFragment);
+    searchIndex.search(searchInput, { minScore: 3, directlyRenderResults: true });
   }
 });
 
