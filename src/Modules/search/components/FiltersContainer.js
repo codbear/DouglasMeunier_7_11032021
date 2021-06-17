@@ -82,6 +82,12 @@ class FiltersContainer {
     this.updateFiltersCloud();
   }
 
+  updateAllDropdowns() {
+    this.dropdownElements.forEach((dropdownElement) => {
+      this.updateDropdown(dropdownElement.id);
+    });
+  }
+
   updateDropdown(dropdownId) {
     const { dropdownElement } = this.dropdownElements
       .filter((element) => element.id === dropdownId)[0];

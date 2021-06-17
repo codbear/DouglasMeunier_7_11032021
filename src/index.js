@@ -14,15 +14,6 @@ searchIndex
   .setFacet('ingredients', { priority: 3, propertyForFacetingNestedObjects: 'ingredient' })
   .renderResults();
 
-const searchInputElement = document.getElementById('searchBar');
-searchInputElement.addEventListener('input', (e) => {
-  const searchInput = e.target.value;
-
-  if (searchInput.length >= 3) {
-    searchIndex.search(searchInput, { minScore: 3, directlyRenderResults: true });
-  }
-});
-
 const filtersContainerRoot = document.getElementById('filtersContainerRoot');
 const filtersContainer = new FiltersContainer(searchIndex, filtersContainerRoot);
 filtersContainer
@@ -41,3 +32,13 @@ filtersContainer
     variant: 'success',
     searchIndexItemProperty: 'utensils',
   });
+
+const searchInputElement = document.getElementById('searchBar');
+searchInputElement.addEventListener('input', (e) => {
+  const searchInput = e.target.value;
+
+  if (searchInput.length >= 3) {
+    searchIndex.search(searchInput, { minScore: 3, directlyRenderResults: true });
+    filtersContainer.updateAllDropdowns();
+  }
+});
